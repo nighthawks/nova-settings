@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use OptimistDigital\NovaSettings\NovaSettings;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
+use OptimistDigital\NovaSettings\Events\NovaSettingsGroupUpdated;
 
 class SettingsController extends Controller
 {
@@ -102,6 +103,8 @@ class SettingsController extends Controller
             }
         });
 
+        NovaSettingsGroupUpdated::dispatch($request->get('path', 'general'));
+
         if (config('nova-settings.reload_page_on_save', false) === true) {
             return response()->json(['reload' => true]);
         }
@@ -139,7 +142,7 @@ class SettingsController extends Controller
     {
         return NovaSettings::getFields($path);
     }
-    
+
     protected function makeFakeResource(string $fieldName, $fieldValue)
     {
         $fakeResource = new \stdClass;
