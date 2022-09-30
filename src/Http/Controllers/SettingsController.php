@@ -109,8 +109,6 @@ class SettingsController extends Controller
             }
         });
 
-        dd($fieldsChanges);
-
         NovaSettingsGroupUpdated::dispatch($request->get('path', 'general'));
 
         if (config('nova-settings.reload_page_on_save', false) === true) {
