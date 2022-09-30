@@ -60,6 +60,7 @@ class SettingsController extends Controller
         if (!NovaSettings::getAuthorizations('authorizedToUpdate')) return $this->unauthorized();
 
         $fields = $this->availableFields($request->get('path', 'general'));
+        $fieldsChanges = [];
 
         // NovaDependencyContainer support
         $fields = $fields->map(function ($field) {
@@ -77,7 +78,7 @@ class SettingsController extends Controller
 
         Validator::make($request->all(), $rules)->validate();
 
-        $fields->whereInstanceOf(Resolvable::class)->each(function ($field) use ($request) {
+        $fields->whereInstanceOf(Resolvable::class)->each(function ($field) use ($request, &$fieldsChanges) {
             if (empty($field->attribute)) return;
             if ($field->isReadonly(app(NovaRequest::class))) return;
             $settingsClass = NovaSettings::getSettingsModel();
@@ -93,15 +94,22 @@ class SettingsController extends Controller
             if (!property_exists($tempResource, $field->attribute)) return;
 
             if (isset($existingRow)) {
+                if($tempResource->{$field->attribute} != $existingRow->value) {
+                    $fieldsChanges[$field->attribute] = $tempResource->{$field->attribute};
+                }
+
                 $existingRow->value = $tempResource->{$field->attribute};
                 $existingRow->save();
             } else {
+                $fieldsChanges[] = $tempResource->{$field->attribute};
                 $newRow = new $settingsClass;
                 $newRow->key = $field->attribute;
                 $newRow->value = $tempResource->{$field->attribute};
                 $newRow->save();
             }
         });
+
+        dd($fieldsChanges);
 
         NovaSettingsGroupUpdated::dispatch($request->get('path', 'general'));
 

@@ -9,6 +9,7 @@ class NovaSettingsGroupUpdated
     use Dispatchable, SerializesModels;
 
     public string $group;
+    public array $updatedFields;
 
     /**
      * Create a new event instance.
@@ -16,8 +17,9 @@ class NovaSettingsGroupUpdated
      * @param  \App\Models\Order  $order
      * @return void
      */
-    public function __construct(string $settingsGroup)
+    public function __construct(string $settingsGroup, array $updatedFields)
     {
         $this->group = $settingsGroup;
+        $this->updatedFields = $updatedFields;
     }
 }
